@@ -26,7 +26,7 @@ tar -xf DepotDownloader.zip -C DepotDownloader || goto :error
 del DepotDownloader.zip
 
 echo %CYAN%=== Downloading depot via DepotDownloader (will prompt for Steam password) ===%RESET%
-DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 6426603215211043630 -dir . -username "%STEAM_USERNAME%" || goto :error
+DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 1151455856673601091 -dir . -username "%STEAM_USERNAME%" || goto :error
 goto :patch
 
 :bucket
