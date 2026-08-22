@@ -1,5 +1,6 @@
 @echo off
 setlocal
+set "PATCH_VERSION=v0.0.3"
 
 rem ANSI colors (Windows 10+): get the ESC character, then define color codes
 for /F "delims=" %%a in ('forfiles /p "%~dp0." /m "%~nx0" /c "cmd /c echo 0x1B"') do set "ESC=%%a"
@@ -9,7 +10,7 @@ set "RED=%ESC%[91m"
 set "RESET=%ESC%[0m"
 
 choice /C YN /M "Do you have Rec Room in your Steam library? "
-if errorlevel 2 goto :bucket
+if errorlevel 2 goto :nomirror
 
 :steam
 set "STEAM_USERNAME="
@@ -29,6 +30,13 @@ echo %CYAN%=== Downloading depot via DepotDownloader (will prompt for Steam pass
 DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 1151455856673601091 -dir . -username "%STEAM_USERNAME%" || goto :error
 goto :patch
 
+:nomirror
+echo %RED%The mirror download is unavailable right now - Rec Room in your Steam library%RESET%
+echo %RED%is required. Answer Y above once the mirror is back.%RESET%
+pause
+exit /b 1
+
+rem Mirror path below is offline for now - nothing jumps to :bucket until it is back.
 :bucket
 set "CLIENT_MD5=4c4a94624eba99028bb36445ccb03253"
 if not exist client.zip goto :download
@@ -53,14 +61,13 @@ tar -xf client.zip -C . || goto :error
 echo %CYAN%=== Writing steam_appid.txt ===%RESET%
 >steam_appid.txt echo 480
 
-echo %CYAN%=== Downloading BepInEx and extracting to this directory ===%RESET%
-curl -s -f -L -o BepInEx.zip https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip || goto :error
-tar -xf BepInEx.zip -C . || goto :error
-del BepInEx.zip
+echo %CYAN%=== Downloading Rec Room 2025 patch ===%RESET%
+curl -s -f -L -o 2025Patch.zip https://github.com/djdevin/Rec-Room-2025-Patch/releases/download/%PATCH_VERSION%/2025Patch-%PATCH_VERSION%-x64.zip || goto :error
+tar -xf 2025Patch.zip -C . || goto :error
+del 2025Patch.zip
 
-echo %CYAN%=== Downloading RecNetPlugin.dll into BepInEx\plugins ===%RESET%
-if not exist "BepInEx\plugins" mkdir "BepInEx\plugins"
-curl -s -f -L -o "BepInEx\plugins\RecNetPlugin.dll" https://github.com/djdevin/recnet-plugin/releases/download/20230414.2/RecNetPlugin.dll || goto :error
+echo %CYAN%=== Pointing 2025patch.ini at RecFlare ===%RESET%
+powershell -NoProfile -Command "$p='2025patch.ini'; $h=@{ApiHost='ns.recflare.net';PhotonHost='photon.recflare.net'}; $t=@(if (Test-Path $p) { Get-Content $p } else { '[config]' }); foreach ($k in $h.Keys) { $r='^\s*'+$k+'\s*='; if ($t -match $r) { $t = $t -replace ($r+'.*'), ($k+'='+$h[$k]) } else { $t += ($k+'='+$h[$k]) } }; Set-Content -Path $p -Value $t -Encoding ASCII" || goto :error
 
 echo %GREEN%=== Done ===%RESET%
 pause
