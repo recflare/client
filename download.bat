@@ -10,7 +10,7 @@ set "RED=%ESC%[91m"
 set "RESET=%ESC%[0m"
 
 choice /C YN /M "Do you have Rec Room in your Steam library? "
-if errorlevel 2 goto :nomirror
+if errorlevel 2 goto :bucket
 
 :steam
 set "STEAM_USERNAME="
@@ -30,15 +30,8 @@ echo %CYAN%=== Downloading depot via DepotDownloader (will prompt for Steam pass
 DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 1151455856673601091 -dir . -username "%STEAM_USERNAME%" || goto :error
 goto :patch
 
-:nomirror
-echo %RED%The mirror download is unavailable right now - Rec Room in your Steam library%RESET%
-echo %RED%is required. Answer Y above once the mirror is back.%RESET%
-pause
-exit /b 1
-
-rem Mirror path below is offline for now - nothing jumps to :bucket until it is back.
 :bucket
-set "CLIENT_MD5=4c4a94624eba99028bb36445ccb03253"
+set "CLIENT_MD5=6820e89bff41906ded7f5c066027f1d6"
 if not exist client.zip goto :download
 echo %CYAN%=== Checking existing client.zip ===%RESET%
 set "LOCAL_MD5="
@@ -51,7 +44,7 @@ echo %RED%client.zip does not match expected hash - redownloading.%RESET%
 
 :download
 echo %CYAN%=== Downloading game client from mirror ===%RESET%
-curl -f -L -o client.zip https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/client.zip || goto :error
+curl -f -L -o client.zip https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip || goto :error
 
 :extract
 echo %CYAN%=== Extracting game client ===%RESET%
