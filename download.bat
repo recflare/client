@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set "PATCH_VERSION=v0.0.3"
+set "PATCH_VERSION=v0.0.5"
 
 rem ANSI colors (Windows 10+): get the ESC character, then define color codes
 for /F "delims=" %%a in ('forfiles /p "%~dp0." /m "%~nx0" /c "cmd /c echo 0x1B"') do set "ESC=%%a"
@@ -55,7 +55,7 @@ echo %CYAN%=== Writing steam_appid.txt ===%RESET%
 >steam_appid.txt echo 480
 
 echo %CYAN%=== Downloading Rec Room 2025 patch ===%RESET%
-curl -s -f -L -o 2025Patch.zip https://github.com/djdevin/Rec-Room-2025-Patch/releases/download/%PATCH_VERSION%/2025Patch-%PATCH_VERSION%-x64.zip || goto :error
+curl -s -f -L -o 2025Patch.zip https://github.com/recflare/patch-2025/releases/download/%PATCH_VERSION%/2025Patch-%PATCH_VERSION%-x64.zip || goto :error
 tar -xf 2025Patch.zip -C . || goto :error
 del 2025Patch.zip
 
