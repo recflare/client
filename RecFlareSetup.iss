@@ -6,7 +6,7 @@
 [Setup]
 AppId={{8E1D2A7B-6C43-4F0A-9B7E-3D5F80C21A96}
 AppName=RecFlare
-AppVersion=20230414
+AppVersion=2025.1
 AppPublisher=RecFlare project
 AppSupportURL=https://github.com/djdevin/recflare
 DefaultDirName={sd}\Games\RecFlare
@@ -28,10 +28,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "RecRoomScreen.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "RecRoomVR.bat"; DestDir: "{app}"; Flags: ignoreversion
-; Points the client at the RecFlare server. Always overwrite so reinstalls pick
-; up server changes; to use your own instance, fork and edit this file, then
-; rebuild the installer (see README "Custom server").
-Source: "BepInEx\config\net.rec.plugin.cfg"; DestDir: "{app}\BepInEx\config"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\RecFlare (Desktop mode)"; Filename: "{app}\recroom.exe"; Parameters: "+forcemode:screen"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"
@@ -46,11 +42,16 @@ Type: filesandordirs; Name: "{app}"
 
 [Code]
 const
-  ClientMD5 = '4c4a94624eba99028bb36445ccb03253';
-  ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/client.zip';
+  PatchVersion = 'v0.0.5';
+  DepotManifest = '1151455856673601091';
+  ClientMD5 = '6820e89bff41906ded7f5c066027f1d6';
+  ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip';
   DepotDownloaderURL = 'https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-windows-x64.zip';
-  BepInExURL = 'https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip';
-  PluginURL = 'https://github.com/djdevin/recnet-plugin/releases/download/20230414.2/RecNetPlugin.dll';
+  PatchURL = 'https://github.com/recflare/patch-2025/releases/download/' + PatchVersion + '/2025Patch-' + PatchVersion + '-x64.zip';
+  { Points the client at the RecFlare server; to use your own instance, fork and
+    change these, then rebuild the installer (see README "Custom server"). }
+  ApiHost = 'ns.recflare.net';
+  PhotonHost = 'photon.recflare.net';
 
 var
   SourcePage: TInputOptionWizardPage;
@@ -113,8 +114,7 @@ begin
       else
         DownloadPage.Add(ClientURL, 'client.zip', '');
     end;
-    DownloadPage.Add(BepInExURL, 'BepInEx.zip', '');
-    DownloadPage.Add(PluginURL, 'RecNetPlugin.dll', '');
+    DownloadPage.Add(PatchURL, '2025Patch.zip', '');
     DownloadPage.Show;
     try
       try
@@ -164,7 +164,7 @@ begin
     ErrorMsg := 'Could not extract DepotDownloader.';
     Exit;
   end;
-  Args := '-app 471710 -depot 471711 -manifest 6426603215211043630 -remember-password' +
+  Args := '-app 471710 -depot 471711 -manifest ' + DepotManifest + ' -remember-password' +
     ' -dir "' + ExpandConstant('{app}') + '"';
   if Trim(SteamPage.Values[0]) <> '' then
     Args := Args + ' -username "' + Trim(SteamPage.Values[0]) + '"'
@@ -179,6 +179,37 @@ begin
     Exit;
   end;
   Result := True;
+end;
+
+{ Sets Key=Value in the ini shipped by the patch, replacing an existing line
+  for that key or appending one, so other settings in the file are kept. }
+procedure SetIniKey(var Lines: TArrayOfString; const Key, Value: String);
+var
+  I: Integer;
+  L: String;
+begin
+  for I := 0 to GetArrayLength(Lines) - 1 do begin
+    L := Trim(Lines[I]);
+    if (Pos('=', L) > 0) and SameText(Trim(Copy(L, 1, Pos('=', L) - 1)), Key) then begin
+      Lines[I] := Key + '=' + Value;
+      Exit;
+    end;
+  end;
+  SetArrayLength(Lines, GetArrayLength(Lines) + 1);
+  Lines[GetArrayLength(Lines) - 1] := Key + '=' + Value;
+end;
+
+function WritePatchIni(const IniPath: String): Boolean;
+var
+  Lines: TArrayOfString;
+begin
+  if not FileExists(IniPath) or not LoadStringsFromFile(IniPath, Lines) then begin
+    SetArrayLength(Lines, 1);
+    Lines[0] := '[config]';
+  end;
+  SetIniKey(Lines, 'ApiHost', ApiHost);
+  SetIniKey(Lines, 'PhotonHost', PhotonHost);
+  Result := SaveStringsToFile(IniPath, Lines, False);
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
@@ -206,21 +237,19 @@ begin
     end;
   end;
 
-  SetPreparingStatus('Installing BepInEx...');
-  if not ExtractZip(ExpandConstant('{tmp}\BepInEx.zip'), ExpandConstant('{app}')) then begin
-    Result := 'Could not extract BepInEx.';
-    Exit;
-  end;
-
   if not SaveStringToFile(ExpandConstant('{app}\steam_appid.txt'), '480', False) then begin
     Result := 'Could not write steam_appid.txt.';
     Exit;
   end;
 
-  if not ForceDirectories(ExpandConstant('{app}\BepInEx\plugins')) or
-     not FileCopy(ExpandConstant('{tmp}\RecNetPlugin.dll'),
-       ExpandConstant('{app}\BepInEx\plugins\RecNetPlugin.dll'), False) then begin
-    Result := 'Could not install RecNetPlugin.dll.';
+  SetPreparingStatus('Installing the Rec Room 2025 patch...');
+  if not ExtractZip(ExpandConstant('{tmp}\2025Patch.zip'), ExpandConstant('{app}')) then begin
+    Result := 'Could not extract the Rec Room 2025 patch.';
+    Exit;
+  end;
+
+  if not WritePatchIni(ExpandConstant('{app}\2025patch.ini')) then begin
+    Result := 'Could not write 2025patch.ini.';
     Exit;
   end;
 end;
