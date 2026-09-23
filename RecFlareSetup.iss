@@ -44,7 +44,7 @@ Type: filesandordirs; Name: "{app}"
 
 [Code]
 const
-  PatchVersion = 'v0.0.5';
+  PatchVersion = 'v0.0.8';
   DepotManifest = '1151455856673601091';
   ClientMD5 = '6820e89bff41906ded7f5c066027f1d6';
   ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip';
