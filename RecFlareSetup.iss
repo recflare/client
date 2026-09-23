@@ -26,14 +26,16 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "RecRoomScreen.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "RecRoomVR.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\RecFlare (Desktop mode)"; Filename: "{app}\recroom.exe"; Parameters: "+forcemode:screen"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"
-Name: "{autoprograms}\RecFlare (VR)"; Filename: "{app}\recroom.exe"; Parameters: "+forcemode:vr"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\RecFlare (Desktop mode)"; Filename: "{app}\recroom.exe"; Parameters: "+forcemode:screen"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
-Name: "{autodesktop}\RecFlare (VR)"; Filename: "{app}\recroom.exe"; Parameters: "+forcemode:vr"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
+; The shortcuts must go through the .bat launchers, not Recroom_Release.exe: the
+; bats start Injector.exe first and wait for it to attach 2025Patch.dll, so
+; launching the exe directly would run an unpatched client. The bats ship in the
+; patch zip and carry the +forcemode: argument themselves.
+Name: "{autoprograms}\RecFlare (Desktop mode)"; Filename: "{app}\RecRoomScreen.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Flags: runminimized
+Name: "{autoprograms}\RecFlare (VR)"; Filename: "{app}\RecRoomVR.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Flags: runminimized
+Name: "{autodesktop}\RecFlare (Desktop mode)"; Filename: "{app}\RecRoomScreen.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Flags: runminimized; Tasks: desktopicon
+Name: "{autodesktop}\RecFlare (VR)"; Filename: "{app}\RecRoomVR.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Flags: runminimized; Tasks: desktopicon
 
 [UninstallDelete]
 ; The game files are downloaded, not installed, so Inno does not track them;

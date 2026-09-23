@@ -1,1 +1,0 @@
-start recroom.exe  +forcemode:vr
