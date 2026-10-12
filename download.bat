@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set "PATCH_VERSION=v0.0.8"
+set "PATCH_VERSION=v0.0.2"
 
 rem ANSI colors (Windows 10+): get the ESC character, then define color codes
 for /F "delims=" %%a in ('forfiles /p "%~dp0." /m "%~nx0" /c "cmd /c echo 0x1B"') do set "ESC=%%a"
@@ -9,8 +9,9 @@ set "GREEN=%ESC%[92m"
 set "RED=%ESC%[91m"
 set "RESET=%ESC%[0m"
 
-choice /C YN /M "Do you have Rec Room in your Steam library? "
-if errorlevel 2 goto :bucket
+rem Non-Steam (mirror) option disabled until a 2026 mirror is available
+rem choice /C YN /M "Do you have Rec Room in your Steam library? "
+rem if errorlevel 2 goto :bucket
 
 :steam
 set "STEAM_USERNAME="
@@ -27,7 +28,7 @@ tar -xf DepotDownloader.zip -C DepotDownloader || goto :error
 del DepotDownloader.zip
 
 echo %CYAN%=== Downloading depot via DepotDownloader (will prompt for Steam password) ===%RESET%
-DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 1151455856673601091 -dir . -username "%STEAM_USERNAME%" || goto :error
+DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711 -manifest 8867414017562658247 -dir . -username "%STEAM_USERNAME%" || goto :error
 goto :patch
 
 :bucket
@@ -54,13 +55,13 @@ tar -xf client.zip -C . || goto :error
 echo %CYAN%=== Writing steam_appid.txt ===%RESET%
 >steam_appid.txt echo 480
 
-echo %CYAN%=== Downloading Rec Room 2025 patch ===%RESET%
-curl -s -f -L -o 2025Patch.zip https://github.com/recflare/patch-2025/releases/download/%PATCH_VERSION%/2025Patch-%PATCH_VERSION%-x64.zip || goto :error
-tar -xf 2025Patch.zip -C . || goto :error
-del 2025Patch.zip
+echo %CYAN%=== Downloading Rec Room 2026 patch ===%RESET%
+curl -s -f -L -o 2026Patch.zip https://github.com/recflare/patch-2026/releases/download/%PATCH_VERSION%/2026Patch-%PATCH_VERSION%-x64.zip || goto :error
+tar -xf 2026Patch.zip -C . || goto :error
+del 2026Patch.zip
 
-echo %CYAN%=== Pointing 2025patch.ini at RecFlare ===%RESET%
-powershell -NoProfile -Command "$p='2025patch.ini'; $h=@{ApiHost='ns.recflare.net';PhotonHost='photon.recflare.net'}; $t=@(if (Test-Path $p) { Get-Content $p } else { '[config]' }); foreach ($k in $h.Keys) { $r='^\s*'+$k+'\s*='; if ($t -match $r) { $t = $t -replace ($r+'.*'), ($k+'='+$h[$k]) } else { $t += ($k+'='+$h[$k]) } }; Set-Content -Path $p -Value $t -Encoding ASCII" || goto :error
+echo %CYAN%=== Pointing 2026patch.ini at RecFlare ===%RESET%
+powershell -NoProfile -Command "$p='2026patch.ini'; $h=@{ApiHost='https://ns.recflare.net';ServerDomain='recflare.net';VoiceKeyXml='<RSAKeyValue><Modulus>nu7lFZqLX+siEI2U8/JihESmm4JrBVLsCHdS8NoAipq2NdJqVouOHQoxtFfJTG6u/+kx4wocnsQ1Ydk5AISyy0GQeweQOTLKlkXsR6on/DL7LqKWxWp3M+MG4kkyZROWh2OELCAudC902p8VSaXmEyH8i1Sid9YiKe0FaNsyzWE=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>'}; $t=@(if (Test-Path $p) { Get-Content $p } else { '[config]' }); foreach ($k in $h.Keys) { $r='^\s*'+$k+'\s*='; if ($t -match $r) { $t = $t -replace ($r+'.*'), ($k+'='+$h[$k]) } else { $t += ($k+'='+$h[$k]) } }; Set-Content -Path $p -Value $t -Encoding ASCII" || goto :error
 
 echo %GREEN%=== Done ===%RESET%
 pause
