@@ -6,7 +6,7 @@
 [Setup]
 AppId={{8E1D2A7B-6C43-4F0A-9B7E-3D5F80C21A96}
 AppName=RecFlare
-AppVersion=2025.1
+AppVersion=2026.1
 AppPublisher=RecFlare project
 AppSupportURL=https://github.com/djdevin/recflare
 DefaultDirName={sd}\Games\RecFlare
@@ -29,7 +29,7 @@ Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; The shortcuts must go through the .bat launchers, not Recroom_Release.exe: the
-; bats start Injector.exe first and wait for it to attach 2025Patch.dll, so
+; bats start Injector.exe first and wait for it to attach 2026patch.dll, so
 ; launching the exe directly would run an unpatched client. The bats ship in the
 ; patch zip and carry the +forcemode: argument themselves.
 Name: "{autoprograms}\RecFlare (Desktop mode)"; Filename: "{app}\RecRoomScreen.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icon.ico"; Flags: runminimized
@@ -44,16 +44,20 @@ Type: filesandordirs; Name: "{app}"
 
 [Code]
 const
-  PatchVersion = 'v0.0.8';
-  DepotManifest = '1151455856673601091';
+  PatchVersion = 'v0.0.2';
+  DepotManifest = '8867414017562658247';
+  { No 2026 community mirror yet: hides the source page and installs from Steam.
+    Set to True (and update ClientMD5/ClientURL) once a mirror exists. }
+  MirrorAvailable = False;
   ClientMD5 = '6820e89bff41906ded7f5c066027f1d6';
   ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip';
   DepotDownloaderURL = 'https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-windows-x64.zip';
-  PatchURL = 'https://github.com/recflare/patch-2025/releases/download/' + PatchVersion + '/2025Patch-' + PatchVersion + '-x64.zip';
+  PatchURL = 'https://github.com/recflare/patch-2026/releases/download/' + PatchVersion + '/2026Patch-' + PatchVersion + '-x64.zip';
   { Points the client at the RecFlare server; to use your own instance, fork and
     change these, then rebuild the installer (see README "Custom server"). }
-  ApiHost = 'ns.recflare.net';
-  PhotonHost = 'photon.recflare.net';
+  ApiHost = 'https://ns.recflare.net';
+  ServerDomain = 'recflare.net';
+  VoiceKeyXml = '<RSAKeyValue><Modulus>nu7lFZqLX+siEI2U8/JihESmm4JrBVLsCHdS8NoAipq2NdJqVouOHQoxtFfJTG6u/+kx4wocnsQ1Ydk5AISyy0GQeweQOTLKlkXsR6on/DL7LqKWxWp3M+MG4kkyZROWh2OELCAudC902p8VSaXmEyH8i1Sid9YiKe0FaNsyzWE=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>';
 
 var
   SourcePage: TInputOptionWizardPage;
@@ -63,7 +67,7 @@ var
 
 function UsingSteam: Boolean;
 begin
-  Result := SourcePage.Values[0];
+  Result := not MirrorAvailable or SourcePage.Values[0];
 end;
 
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
@@ -96,7 +100,8 @@ end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := (PageID = SteamPage.ID) and not UsingSteam;
+  Result := ((PageID = SourcePage.ID) and not MirrorAvailable) or
+    ((PageID = SteamPage.ID) and not UsingSteam);
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
@@ -116,7 +121,7 @@ begin
       else
         DownloadPage.Add(ClientURL, 'client.zip', '');
     end;
-    DownloadPage.Add(PatchURL, '2025Patch.zip', '');
+    DownloadPage.Add(PatchURL, '2026Patch.zip', '');
     DownloadPage.Show;
     try
       try
@@ -210,7 +215,8 @@ begin
     Lines[0] := '[config]';
   end;
   SetIniKey(Lines, 'ApiHost', ApiHost);
-  SetIniKey(Lines, 'PhotonHost', PhotonHost);
+  SetIniKey(Lines, 'ServerDomain', ServerDomain);
+  SetIniKey(Lines, 'VoiceKeyXml', VoiceKeyXml);
   Result := SaveStringsToFile(IniPath, Lines, False);
 end;
 
@@ -244,14 +250,14 @@ begin
     Exit;
   end;
 
-  SetPreparingStatus('Installing the Rec Room 2025 patch...');
-  if not ExtractZip(ExpandConstant('{tmp}\2025Patch.zip'), ExpandConstant('{app}')) then begin
-    Result := 'Could not extract the Rec Room 2025 patch.';
+  SetPreparingStatus('Installing the Rec Room 2026 patch...');
+  if not ExtractZip(ExpandConstant('{tmp}\2026Patch.zip'), ExpandConstant('{app}')) then begin
+    Result := 'Could not extract the Rec Room 2026 patch.';
     Exit;
   end;
 
-  if not WritePatchIni(ExpandConstant('{app}\2025patch.ini')) then begin
-    Result := 'Could not write 2025patch.ini.';
+  if not WritePatchIni(ExpandConstant('{app}\2026patch.ini')) then begin
+    Result := 'Could not write 2026patch.ini.';
     Exit;
   end;
 end;
