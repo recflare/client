@@ -9,9 +9,8 @@ set "GREEN=%ESC%[92m"
 set "RED=%ESC%[91m"
 set "RESET=%ESC%[0m"
 
-rem Non-Steam (mirror) option disabled until a 2026 mirror is available
-rem choice /C YN /M "Do you have Rec Room in your Steam library? "
-rem if errorlevel 2 goto :bucket
+choice /C YN /M "Do you have Rec Room in your Steam library? "
+if errorlevel 2 goto :bucket
 
 :steam
 set "STEAM_USERNAME="
@@ -32,7 +31,7 @@ DepotDownloader\DepotDownloader.exe -remember-password -app 471710 -depot 471711
 goto :patch
 
 :bucket
-set "CLIENT_MD5=6820e89bff41906ded7f5c066027f1d6"
+set "CLIENT_MD5=96512e70cfa1c2d0da5745740cba1472"
 if not exist client.zip goto :download
 echo %CYAN%=== Checking existing client.zip ===%RESET%
 set "LOCAL_MD5="
@@ -45,7 +44,7 @@ echo %RED%client.zip does not match expected hash - redownloading.%RESET%
 
 :download
 echo %CYAN%=== Downloading game client from mirror ===%RESET%
-curl -f -L -o client.zip https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip || goto :error
+curl -f -L -o client.zip https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2026/client.zip || goto :error
 
 :extract
 echo %CYAN%=== Extracting game client ===%RESET%

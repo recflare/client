@@ -46,11 +46,8 @@ Type: filesandordirs; Name: "{app}"
 const
   PatchVersion = 'v0.0.2';
   DepotManifest = '8867414017562658247';
-  { No 2026 community mirror yet: hides the source page and installs from Steam.
-    Set to True (and update ClientMD5/ClientURL) once a mirror exists. }
-  MirrorAvailable = False;
-  ClientMD5 = '6820e89bff41906ded7f5c066027f1d6';
-  ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2025/client.zip';
+  ClientMD5 = '96512e70cfa1c2d0da5745740cba1472';
+  ClientURL = 'https://s3.g.megas4.com/2koayuyiwxv4groxzwdbbxg43cwustavrkvfb/recflare/2026/client.zip';
   DepotDownloaderURL = 'https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-windows-x64.zip';
   PatchURL = 'https://github.com/recflare/patch-2026/releases/download/' + PatchVersion + '/2026Patch-' + PatchVersion + '-x64.zip';
   { Points the client at the RecFlare server; to use your own instance, fork and
@@ -67,7 +64,7 @@ var
 
 function UsingSteam: Boolean;
 begin
-  Result := not MirrorAvailable or SourcePage.Values[0];
+  Result := SourcePage.Values[0];
 end;
 
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
@@ -100,8 +97,7 @@ end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := ((PageID = SourcePage.ID) and not MirrorAvailable) or
-    ((PageID = SteamPage.ID) and not UsingSteam);
+  Result := (PageID = SteamPage.ID) and not UsingSteam;
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
