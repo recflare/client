@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set "PATCH_VERSION=v0.0.2"
+set "PATCH_VERSION=v0.0.3"
 
 rem ANSI colors (Windows 10+): get the ESC character, then define color codes
 for /F "delims=" %%a in ('forfiles /p "%~dp0." /m "%~nx0" /c "cmd /c echo 0x1B"') do set "ESC=%%a"
