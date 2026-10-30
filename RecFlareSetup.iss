@@ -153,8 +153,9 @@ var
   ResultCode: Integer;
 begin
   Result := ForceDirectories(DestDir) and
+    { Run tar from DestDir: with a blank working dir it would start in System32. }
     Exec(ExpandConstant('{sys}\tar.exe'), Format('-xf "%s" -C "%s"', [ZipPath, DestDir]),
-      '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0);
+      DestDir, SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0);
 end;
 
 function RunDepotDownloader(var ErrorMsg: String): Boolean;
